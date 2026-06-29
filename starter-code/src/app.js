@@ -12,7 +12,7 @@ export function createApp() {
   let prochainId = 1;
 
   app.get("/", (req, res) => {
-    res.json({ service: "fil-rouge-devops", message: "API de taches" });
+    res.json({ service: "fil-rouge-devops", message: "API Tasks" });
   });
 
   app.get("/tasks", (req, res) => {
