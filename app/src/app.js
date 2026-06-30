@@ -1,0 +1,74 @@
+import express from "express";
+
+export function createApp() {
+  const app = express();
+  app.use(express.json());
+
+  const taches = new Map();
+  let prochainId = 1;
+
+  // Metriques simples au format Prometheus
+  const requestCounts = new Map();
+
+  function recordRequest(method, path, statusCode) {
+    const key = `${method}|${path}|${statusCode}`;
+    requestCounts.set(key, (requestCounts.get(key) || 0) + 1);
+  }
+
+  app.use((req, res, next) => {
+    res.on("finish", () => {
+      recordRequest(req.method, req.path, res.statusCode);
+    });
+    next();
+  });
+
+  app.get("/metrics", (req, res) => {
+    const lines = [
+      "# HELP http_requests_total Total number of HTTP requests.",
+      "# TYPE http_requests_total counter"
+    ];
+    for (const [key, count] of requestCounts.entries()) {
+      const [method, path, status] = key.split("|");
+      lines.push(
+        `http_requests_total{method="${method}",path="${path}",status="${status}"} ${count}`
+      );
+    }
+    res.set("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+    res.send(lines.join("\n") + "\n");
+  });
+
+  app.get("/", (req, res) => {
+    res.json({ service: "fil-rouge-devops", message: "API de taches" });
+  });
+
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "healthy" });
+  });
+
+  app.get("/tasks", (req, res) => {
+    res.json([...taches.values()]);
+  });
+
+  app.post("/tasks", (req, res) => {
+    const titre = req.body?.titre;
+    if (typeof titre !== "string" || titre.trim() === "") {
+      res.status(400).json({ erreur: "titre requis" });
+      return;
+    }
+    const priorité = req.body?.priorité === "haute" ? "haute" : "normale";
+    const tache = { id: prochainId++, titre: titre.trim(), priorité, faite: false };
+    taches.set(tache.id, tache);
+    res.status(201).json(tache);
+  });
+
+  app.get("/tasks/:id", (req, res) => {
+    const tache = taches.get(Number(req.params.id));
+    if (!tache) {
+      res.status(404).json({ erreur: "tache introuvable" });
+      return;
+    }
+    res.json(tache);
+  });
+
+  return app;
+}
