@@ -7,7 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  # Stage 1 : Tests
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -32,7 +31,6 @@ jobs:
           name: test-output-node-${{ matrix.node-version }}
           path: app/test-output.txt
 
-  # Stage 2 : Build image Docker
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -47,7 +45,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Stage 3 : Scan de sécurité
   security:
     needs: build
     runs-on: ubuntu-latest
@@ -62,7 +59,6 @@ jobs:
           exit-code: '1'
           format: 'table'
 
-  # Stage 4 : Deploy (simulé)
   deploy:
     needs: [build, security]
     if: github.ref == 'refs/heads/main'
