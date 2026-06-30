@@ -53,4 +53,4 @@ npm run lint
 - `GET /tasks/:id` : une tâche par son identifiant
 
 Le store est en mémoire : les tâches disparaissent au redémarrage. C'est voulu, on en reparle au
-jour 3 (processus sans état et parité des environnements).
+jour 3 (processus sans état et parité des environnements). Membres Alexia et Berenice
