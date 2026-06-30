@@ -7,6 +7,36 @@ export function createApp() {
   const taches = new Map();
   let prochainId = 1;
 
+  // Metriques simples au format Prometheus
+  const requestCounts = new Map();
+
+  function recordRequest(method, path, statusCode) {
+    const key = `${method}|${path}|${statusCode}`;
+    requestCounts.set(key, (requestCounts.get(key) || 0) + 1);
+  }
+
+  app.use((req, res, next) => {
+    res.on("finish", () => {
+      recordRequest(req.method, req.path, res.statusCode);
+    });
+    next();
+  });
+
+  app.get("/metrics", (req, res) => {
+    const lines = [
+      "# HELP http_requests_total Total number of HTTP requests.",
+      "# TYPE http_requests_total counter"
+    ];
+    for (const [key, count] of requestCounts.entries()) {
+      const [method, path, status] = key.split("|");
+      lines.push(
+        `http_requests_total{method="${method}",path="${path}",status="${status}"} ${count}`
+      );
+    }
+    res.set("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+    res.send(lines.join("\n") + "\n");
+  });
+
   app.get("/", (req, res) => {
     res.json({ service: "fil-rouge-devops", message: "API de taches" });
   });
