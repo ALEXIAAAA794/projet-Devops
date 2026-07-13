@@ -3,35 +3,47 @@ name: CI
 on:
   pull_request:
     branches: [main]
-
   push:
     branches: [main]
 
 jobs:
-  quality:
+  test:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: starter-code
-
     steps:
-      - name: Checkout du dépôt
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Installer Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Installer les dépendances
-        run: npm ci
+      - run: npm ci
 
-      - name: Exécuter les tests
-        run: npm test
+      - run: npm test
 
-      - name: Vérifier le lint
-        run: npm run lint
+  lint:
+    runs-on: ubuntu-latest
+    needs: test
 
-      - name: Construire l'image Docker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
         run: docker build -t fil-rouge-devops .
