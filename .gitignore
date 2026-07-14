@@ -1,19 +1,40 @@
+# macOS
 .DS_Store
+
+# Éditeurs
 *.swp
 *.swo
+
+# Variables d'environnement
 .env
 .env.local
+
+# Node.js
 node_modules/
+
+# Python
 __pycache__/
 *.pyc
 .venv/
 venv/
-# Artefacts de build et de couverture des TP
+
+# Build
 dist/
 build/
+
+# Couverture de tests
 coverage/
 .coverage
+
+# Logs
 *.log
-# Images et volumes Docker locaux generes par les TP
+
+# Docker
 *.tar
 .docker/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl

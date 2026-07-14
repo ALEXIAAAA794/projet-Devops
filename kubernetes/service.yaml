@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: fil-rouge-devops
+  namespace: fil-rouge-devops
+
+spec:
+  selector:
+    app: fil-rouge-devops
+
+  ports:
+    - port: 80
+      targetPort: 3000
+
+  type: ClusterIP
